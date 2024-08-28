@@ -20,9 +20,9 @@ export async function GET(request:Request) {
         // validate with zod
         const result = UsernameQuerySchema.safeParse(queryParam)
 
-        console.log(result); // remove
+        // console.log(result); // remove
         if(!result.success){
-            const usernameErrors = result.error.format().username?._errors
+            const usernameErrors = result.error.format().username?._errors || []
             return Response.json({
                 success : false,
                 message : "Username is not available", usernameErrors,
@@ -42,7 +42,7 @@ export async function GET(request:Request) {
         return Response.json({
             success: true,
             message: "Username is available"
-        }, {status: 400})
+        }, {status: 200})
 
     } catch (error) {
         console.error("Error checking username" , error);
