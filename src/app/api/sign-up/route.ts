@@ -2,7 +2,6 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/User";
 import bcrypt from "bcryptjs"
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
-import { Rethink_Sans } from "next/font/google";
 
 
 export async function POST(request:Request){
@@ -72,7 +71,7 @@ export async function POST(request:Request){
             return Response.json({
                 success: true,
                 message: "User registered Successfully . Please Verify Your Email"
-            },{status:500})
+            },{status:201})
 
     } catch (error) {
         console.log('Error registering user', error);
