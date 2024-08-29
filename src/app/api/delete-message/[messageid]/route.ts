@@ -1,19 +1,16 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/User";
 import { User } from "next-auth";
 import mongoose from "mongoose";
 
 
-export async function GET (request : Request){
+export async function DELETE (request : Request,{params}: {params:{messageid:string}}){
+    const messageid = params.messageid
     await dbConnect()
-    
-    
     const session = await getServerSession(authOptions)
-
     const user : User = session?.user as User
-
     if (!session || !session.user){
         return Response.json(
             {
@@ -24,42 +21,37 @@ export async function GET (request : Request){
         )
     }
 
-    const userId = new mongoose.Types.ObjectId(user._id)
-
     try {
-        const user = await UserModel.aggregate([
-            {$match: {id: userId}},
-            {$unwind: '$messages'},
-            {$sort : {'mesages.createdAt': -1}},
-            {$group:{_id: '$_id', messages:{$push:'$messages'}}}
-        ])
-        if (!user || user.length===0){
+        const updateResult = await UserModel.updateOne(
+            {_id: user._id},
+            {$pull:{messages:{_id: messageid}}}
+        )
+        if(updateResult.modifiedCount== 0){
             return Response.json(
                 {
                     success: false,
-                    message: "User Not found"
+                    message: "Message not found or already deleted"
                 },
-                {status : 401}
+                {status : 404}
             )
         }
         return Response.json(
             {
                 success: true,
-                messages: user[0].messages
+                message: "Message Delete"
             },
             {status : 200}
         )
     } catch (error) {
-        console.log("An unexpected error occured: ",error);
+        console.error("Error in delete message route",error);
         
         return Response.json(
             {
                 success: false,
-                message: "User Not found"
+                message: "Error deleting Message"
             },
-            {status : 401}
+            {status : 500}
         )
     }
-
 
 }
