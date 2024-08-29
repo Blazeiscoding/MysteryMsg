@@ -37,23 +37,30 @@ function page() {
   });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    const result =  await signIn('credentials',
-      {
-        redirect: false,
-        identifier: data.identifier,
-        password: data.password,
+    const result = await signIn('credentials', {
+      redirect: false,
+      identifier: data.identifier,
+      password: data.password,
+    });
+
+    if (result?.error) {
+      if (result.error === 'CredentialsSignin') {
+        toast({
+          title: 'Login Failed',
+          description: 'Incorrect username or password',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        });
       }
-    )  
-    if(result?.error){
-      toast({
-        title: "Login Failed",
-        description: "Incorrect username or password",
-        variant: "destructive"
-      })
-      
     }
-    if(result?.url){
-        router.replace('/dashboard')
+
+    if (result?.url) {
+      router.replace('/dashboard');
     }
   };
 
