@@ -1,122 +1,129 @@
-"use client"
-import MessageCard from '@/components/MessageCard'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
-import { useToast } from '@/components/ui/use-toast'
-import { Message, User } from '@/models/User'
-import { acceptMessagesSchema } from '@/schemas/acceptMessageSchema'
-import { ApiResponse } from '@/types/apiResponse'
-import { zodResolver } from '@hookform/resolvers/zod'
-import axios, { AxiosError } from 'axios'
-import { Loader2, RefreshCcw } from 'lucide-react'
-import { useSession } from 'next-auth/react'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+"use client";
+import MessageCard from "@/components/MessageCard";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { Message, User } from "@/models/User";
+import { acceptMessagesSchema } from "@/schemas/acceptMessageSchema";
+import { ApiResponse } from "@/types/apiResponse";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios, { AxiosError } from "axios";
+import { Loader2, RefreshCcw } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 const Page = () => {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSwitchLoading, setIsSwitchLoading] = useState(false)
-  const { toast } = useToast()
-  
-  const { data: session } = useSession()
-  
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSwitchLoading, setIsSwitchLoading] = useState(false);
+  const { toast } = useToast();
+
+  const { data: session } = useSession();
+
   const form = useForm({
-    resolver: zodResolver(acceptMessagesSchema)
-  })
-  
-  const { register, watch, setValue } = form
-  const acceptMessages = watch('acceptMessages')
+    resolver: zodResolver(acceptMessagesSchema),
+  });
+
+  const { register, watch, setValue } = form;
+  const acceptMessages = watch("acceptMessages");
 
   const fetchAcceptMessage = useCallback(async () => {
-    setIsSwitchLoading(true)
+    setIsSwitchLoading(true);
     try {
-      const response = await axios.get<ApiResponse>('/api/accept-messages')
-      setValue('acceptMessages', response.data.isAcceptingMessage)
+      const response = await axios.get<ApiResponse>("/api/accept-messages");
+      setValue("acceptMessages", response.data.isAcceptingMessage);
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>
+      const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Error",
-        description: axiosError.response?.data.message || "Failed to fetch message",
-       
-        variant: "destructive",
-      })
-    } finally {
-      setIsSwitchLoading(false)
-    }
-  }, [setValue, toast])
+        description:
+          axiosError.response?.data.message || "Failed to fetch message",
 
-  const fetchMessages = useCallback(async (refresh: boolean = false) => {
-    setIsLoading(true)
-    setIsSwitchLoading(false)
-    try {
-      const response = await axios.get<ApiResponse>('/api/get/messages')
-      setMessages(response.data.messages || [])
-      if (refresh) {
-        toast({
-          title: "Refreshed Messages",
-          description: "Showing latest messages",
-        })
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>
-      toast({
-        title: "Error",
-        description: axiosError.response?.data.message || "Failed to fetch messages",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
-      setIsSwitchLoading(false)
+      setIsSwitchLoading(false);
     }
-  }, [setIsLoading, setMessages, toast])
+  }, [setValue, toast]);
+
+  const fetchMessages = useCallback(
+    async (refresh: boolean = false) => {
+      setIsLoading(true);
+      setIsSwitchLoading(false);
+      try {
+        const response = await axios.get<ApiResponse>("/api/get-messages");
+        setMessages(response.data.messages || []);
+        if (refresh) {
+          toast({
+            title: "Refreshed Messages",
+            description: "Showing latest messages",
+          });
+        }
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiResponse>;
+        toast({
+          title: "Error",
+          description:
+            axiosError.response?.data.message || "Failed to fetch messages",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+        setIsSwitchLoading(false);
+      }
+    },
+    [setIsLoading, setMessages, toast]
+  );
 
   useEffect(() => {
-    if (!session || !session.user) return
-    fetchMessages()
-    fetchAcceptMessage()
-  }, [session, fetchAcceptMessage, fetchMessages])
+    if (!session || !session.user) return;
+    fetchMessages();
+    fetchAcceptMessage();
+  }, [session, fetchAcceptMessage, fetchMessages]);
 
   const handleSwitchChange = async () => {
     try {
-      const response = await axios.post<ApiResponse>('/api/accept-messages', {
-        acceptMessages: !acceptMessages
-      })
-      setValue('acceptMessages', !acceptMessages)
+      const response = await axios.post<ApiResponse>("/api/accept-messages", {
+        acceptMessages: !acceptMessages,
+      });
+      setValue("acceptMessages", !acceptMessages);
       toast({
         title: response.data.message,
-        variant: "default"
-      })
+        variant: "default",
+      });
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>
+      const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Error",
-        description: axiosError.response?.data.message || "Failed to update message acceptance",
+        description:
+          axiosError.response?.data.message ||
+          "Failed to update message acceptance",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   // Ensure session and session.user are defined before using them
-  const username = session?.user?.username
+  const username = session?.user?.username;
   if (!username) {
-    return <div>Please Login</div>
+    return <div>Please Login</div>;
   }
 
-  const baseUrl = `${window.location.protocol}//${window.location.host}`
-  const profileUrl = `${baseUrl}/u/${username}`
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const profileUrl = `${baseUrl}/u/${username}`;
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(profileUrl)
+    navigator.clipboard.writeText(profileUrl);
     toast({
       title: "URL copied",
-      description: "Profile URL has been copied to clipboard"
-    })
-  }
+      description: "Profile URL has been copied to clipboard",
+    });
+  };
 
   function handleDeleteMessage(messageId: string): void {
-    throw new Error('Function not implemented.')
+    throw new Error("Function not implemented.");
   }
 
   return (
@@ -138,13 +145,13 @@ const Page = () => {
 
       <div className="mb-4">
         <Switch
-          {...register('acceptMessages')}
+          {...register("acceptMessages")}
           checked={acceptMessages}
           onCheckedChange={handleSwitchChange}
           disabled={isSwitchLoading}
         />
         <span className="ml-2">
-          Accept Messages: {acceptMessages ? 'On' : 'Off'}
+          Accept Messages: {acceptMessages ? "On" : "Off"}
         </span>
       </div>
       <Separator />
@@ -153,8 +160,8 @@ const Page = () => {
         className="mt-4"
         variant="outline"
         onClick={(e) => {
-          e.preventDefault()
-          fetchMessages(true)
+          e.preventDefault();
+          fetchMessages(true);
         }}
       >
         {isLoading ? (
@@ -177,7 +184,7 @@ const Page = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

@@ -115,13 +115,15 @@ function page() {
                     />
                   </FormControl>
                   {isCheckingUsername && <Loader2 className="animate-spin" />}
-                  <p className={`text-sm ${
-                        usernameMessage === 'Username is available'
-                          ? 'text-green-500'
-                          : 'text-red-500'
-                      }`} >
+                  <p
+                    className={`text-sm ${
+                      usernameMessage === "Username is available"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
                     {usernameMessage}
-                    </p>
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
