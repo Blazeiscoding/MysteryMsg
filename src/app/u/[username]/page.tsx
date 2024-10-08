@@ -88,7 +88,7 @@ export default function SendMessage() {
 
   const fetchSuggestedMessages = async () => {
     try {
-      complete('');
+      await complete('');
     } catch (error) {
       console.error('Error fetching messages:', error);
       // Handle error appropriately
@@ -150,21 +150,21 @@ export default function SendMessage() {
             <h3 className="text-xl font-semibold">Messages</h3>
           </CardHeader>
           <CardContent className="flex flex-col space-y-4">
-            {error ? (
-              <p className="text-red-500">{error.message}</p>
-            ) : (
-              parseStringMessages(completion).map((message, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="mb-2"
-                  onClick={() => handleMessageClick(message)}
-                >
-                  {message}
-                </Button>
-              ))
-            )}
-          </CardContent>
+  {error ? (
+    <p className="text-red-500">{error.message}</p>
+  ) : (
+    parseStringMessages(completion).map((message, index) => (
+      <Button
+        key={index}
+        variant="outline"
+        className="mb-2"
+        onClick={() => handleMessageClick(message)}
+      >
+        {message}
+      </Button>
+    ))
+  )}
+</CardContent>
         </Card>
       </div>
       <Separator className="my-6" />
